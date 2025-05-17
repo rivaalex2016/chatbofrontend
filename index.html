@@ -2,19 +2,19 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Chat con el Bot</title>
+  <title>Chatbot Innovug</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
-      background-color: #f5f5f5;
+      background-color: #f2f2f2;
     }
-    .chat-box {
+    .chat-container {
       max-width: 600px;
-      margin: 30px auto;
+      margin: 40px auto;
       background: white;
-      border-radius: 10px;
       padding: 20px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     .msg {
       padding: 10px 15px;
@@ -26,29 +26,36 @@
     .msg.user {
       background-color: #d1e7dd;
       align-self: flex-end;
+      margin-left: auto;
     }
     .msg.bot {
       background-color: #e2e3e5;
       align-self: flex-start;
+      margin-right: auto;
     }
     .messages {
       display: flex;
       flex-direction: column;
+      height: 300px;
+      overflow-y: auto;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 10px;
+      background: #fafafa;
     }
   </style>
 </head>
 <body>
-  <div class="chat-box">
-    <h3 class="text-center mb-3">Chatbot</h3>
+  <div class="chat-container">
+    <h3 class="text-center mb-3">🤖 Chatbot Innovug</h3>
 
-    <div class="mb-3">
-      <input type="text" id="username" class="form-control" placeholder="Tu nombre">
-    </div>
+    <input id="username" class="form-control mb-2" placeholder="Tu nombre" />
 
-    <div id="chat" class="messages mb-3"></div>
+    <div id="chat" class="messages"></div>
 
     <div class="input-group">
-      <input type="text" id="msg" class="form-control" placeholder="Escribe tu mensaje...">
+      <input id="msg" class="form-control" placeholder="Escribe tu mensaje..." />
       <button class="btn btn-primary" onclick="enviarMensaje()">Enviar</button>
     </div>
   </div>
@@ -63,7 +70,7 @@
 
       // Mostrar mensaje del usuario
       const divUser = document.createElement("div");
-      divUser.className = "msg user align-self-end";
+      divUser.className = "msg user";
       divUser.innerText = `${nombre}: ${texto}`;
       chat.appendChild(divUser);
 
@@ -85,6 +92,13 @@
       document.getElementById("msg").value = "";
       chat.scrollTop = chat.scrollHeight;
     }
+
+    // Enviar con Enter
+    document.getElementById("msg").addEventListener("keypress", function (e) {
+      if (e.key === "Enter") {
+        enviarMensaje();
+      }
+    });
   </script>
 </body>
 </html>
