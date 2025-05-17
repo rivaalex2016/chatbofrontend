@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Chatbot en Web</title>
+</head>
+<body>
+  <h1>Chat con el Bot</h1>
+
+  <input type="text" id="msg" placeholder="Escribe tu mensaje">
+  <button onclick="enviarMensaje()">Enviar</button>
+
+  <div id="respuesta" style="margin-top:20px; font-weight: bold;"></div>
+
+  <script>
+    async function enviarMensaje() {
+      const mensaje = document.getElementById("msg").value;
+
+      const respuesta = await fetch("https://chatbot-backend-1-p65u.onrender.com/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ message: mensaje })
+      });
+
+      const data = await respuesta.json();
+      document.getElementById("respuesta").innerText = "Bot: " + data.response;
+    }
+  </script>
+</body>
+</html>
