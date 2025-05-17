@@ -54,9 +54,14 @@
 
     <div id="chat" class="messages"></div>
 
-    <div class="input-group">
+    <div class="input-group mb-2">
       <input id="msg" class="form-control" placeholder="Escribe tu mensaje..." />
       <button class="btn btn-primary" onclick="enviarMensaje()">Enviar</button>
+    </div>
+
+    <div class="input-group">
+      <input type="file" id="archivo" class="form-control" />
+      <button class="btn btn-secondary" onclick="enviarArchivo()">Enviar archivo</button>
     </div>
   </div>
 
@@ -68,13 +73,11 @@
 
       if (!nombre || !texto) return;
 
-      // Mostrar mensaje del usuario
       const divUser = document.createElement("div");
       divUser.className = "msg user";
       divUser.innerText = `${nombre}: ${texto}`;
       chat.appendChild(divUser);
 
-      // Enviar mensaje al backend
       const respuesta = await fetch("https://chatbot-backend-1-p65u.onrender.com/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -83,7 +86,6 @@
 
       const data = await respuesta.json();
 
-      // Mostrar respuesta del bot
       const divBot = document.createElement("div");
       divBot.className = "msg bot";
       divBot.innerText = `Bot: ${data.response}`;
@@ -91,6 +93,28 @@
 
       document.getElementById("msg").value = "";
       chat.scrollTop = chat.scrollHeight;
+    }
+
+    async function enviarArchivo() {
+      const archivo = document.getElementById("archivo").files[0];
+      const chat = document.getElementById("chat");
+
+      if (!archivo) return alert("Selecciona un archivo primero");
+
+      const formData = new FormData();
+      formData.append("file", archivo);
+
+      const respuesta = await fetch("https://chatbot-backend-1-p65u.onrender.com/api/upload", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await respuesta.json();
+
+      const divBot = document.createElement("div");
+      divBot.className = "msg bot";
+      divBot.innerText = `Bot: ${data.response || "Archivo recibido"}`;
+      chat.appendChild(divBot);
     }
 
     // Enviar con Enter
@@ -102,3 +126,4 @@
   </script>
 </body>
 </html>
+
