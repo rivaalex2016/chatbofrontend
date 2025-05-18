@@ -2,137 +2,63 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🤖 Chatbot Innovug</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <style>
-    body {
-      background-color: #f8f9fa;
-      font-family: 'Segoe UI', sans-serif;
-    }
-    .chat-container {
-      max-width: 700px;
-      margin: 2rem auto;
-      background: white;
-      border-radius: 20px;
-      padding: 2rem;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
-    }
-    .chat-box {
-      height: 400px;
-      overflow-y: auto;
-      border: 1px solid #ccc;
-      padding: 1rem;
-      border-radius: 10px;
-      background-color: #f1f1f1;
-      margin-bottom: 1rem;
-    }
-    .msg-user {
-      text-align: right;
-      background-color: #d1e7dd;
-      padding: 0.5rem;
-      border-radius: 20px;
-      margin: 0.5rem 0;
-      display: inline-block;
-    }
-    .msg-bot {
-      text-align: left;
-      background-color: #dee2e6;
-      padding: 0.5rem;
-      border-radius: 20px;
-      margin: 0.5rem 0;
-      display: inline-block;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chatbot Innovug</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
 </head>
-<body>
-  <div class="chat-container">
-    <h3 class="text-center mb-4">🤖 Chatbot Innovug</h3>
-
-    <input type="text" id="user_id" class="form-control mb-3" placeholder="Ingresa tu ID"/>
-
-    <div id="chat" class="chat-box"></div>
-
-    <div class="input-group mb-2">
-      <input type="text" id="msg" class="form-control" placeholder="Escribe tu mensaje..." />
-      <button class="btn btn-primary" onclick="enviarMensaje()">Enviar</button>
-    </div>
-
-    <div class="input-group">
-      <input type="file" id="fileInput" class="form-control" />
-      <button class="btn btn-dark" onclick="enviarArchivo()">Enviar archivo</button>
+<body class="bg-light">
+  <div class="container mt-5">
+    <div class="card shadow">
+      <div class="card-body">
+        <h2 class="text-center mb-4">🤖 Chatbot Innovug</h2>
+        <form id="chat-form" enctype="multipart/form-data">
+          <input type="text" id="user_id" class="form-control mb-2" placeholder="ID de usuario" required />
+          <textarea id="message" class="form-control mb-2" rows="3" placeholder="Escribe tu mensaje..." required></textarea>
+          <input type="file" id="file" name="file" class="form-control mb-2" />
+          <button type="submit" class="btn btn-primary w-100">Enviar</button>
+        </form>
+        <div id="chat-output" class="mt-4"></div>
+      </div>
     </div>
   </div>
 
   <script>
-    const chat = document.getElementById("chat");
+    document.getElementById('chat-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
 
-    async function enviarMensaje() {
-      const texto = document.getElementById("msg").value.trim();
-      const user_id = document.getElementById("user_id").value.trim();
-      if (!texto || !user_id) return;
-
-      const divUser = document.createElement("div");
-      divUser.className = "msg-user align-self-end";
-      divUser.innerText = `${user_id}: ${texto}`;
-      chat.appendChild(divUser);
-
-      try {
-        const res = await fetch("https://chatbot-backend-nqls.onrender.com/api/chat", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ message: texto, user_id }),
-        });
-        const data = await res.json();
-
-        const divBot = document.createElement("div");
-        divBot.className = "msg-bot";
-        divBot.innerText = `Bot: ${data.response || "Error"}`;
-        chat.appendChild(divBot);
-      } catch (err) {
-        const errorBot = document.createElement("div");
-        errorBot.className = "msg-bot";
-        errorBot.innerText = "Bot: Error al conectar con el servidor.";
-        chat.appendChild(errorBot);
-      }
-
-      document.getElementById("msg").value = "";
-      chat.scrollTop = chat.scrollHeight;
-    }
-
-    async function enviarArchivo() {
-      const fileInput = document.getElementById("fileInput");
+      const userId = document.getElementById('user_id').value;
+      const message = document.getElementById('message').value;
+      const fileInput = document.getElementById('file');
       const file = fileInput.files[0];
-      const user_id = document.getElementById("user_id").value.trim();
-      if (!file || !user_id) return;
 
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("user_id", userId);
+      formData.append("message", message);
 
-      try {
-        const res = await fetch("https://chatbot-backend-nqls.onrender.com/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-        const data = await res.json();
-
-        const divArchivo = document.createElement("div");
-        divArchivo.className = "msg-bot";
-        divArchivo.innerText = `📄 Archivo ${file.name} recibido correctamente`;
-        chat.appendChild(divArchivo);
-      } catch (err) {
-        const errorDiv = document.createElement("div");
-        errorDiv.className = "msg-bot";
-        errorDiv.innerText = "Bot: Error al subir el archivo.";
-        chat.appendChild(errorDiv);
+      if (file) {
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (ext === "pdf") {
+          formData.append("pdf", file);
+        } else if (ext === "xlsx") {
+          formData.append("xlsx", file);
+        } else if (ext === "csv") {
+          formData.append("csv", file);
+        }
       }
 
-      chat.scrollTop = chat.scrollHeight;
-      fileInput.value = "";
-    }
+      try {
+        const response = await fetch("https://chatbot-backend-nqls.onrender.com/api/chat", {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await response.json();
+        document.getElementById('chat-output').innerText = "Bot: " + (data.response || data.error);
+      } catch (error) {
+        console.error("Error enviando mensaje:", error);
+        document.getElementById('chat-output').innerText = "Error del servidor.";
+      }
+    });
   </script>
 </body>
 </html>
-
