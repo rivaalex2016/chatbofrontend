@@ -3,140 +3,136 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Chatbot Innovug</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <title>🤖 Chatbot Innovug</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <style>
     body {
-      background: #f1f1f1;
+      background-color: #f8f9fa;
+      font-family: 'Segoe UI', sans-serif;
     }
     .chat-container {
       max-width: 700px;
-      margin: 30px auto;
+      margin: 2rem auto;
       background: white;
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-    }
-    .msg-bot {
-      background: #ddd;
-      padding: 10px 15px;
-      border-radius: 15px;
-      margin-bottom: 10px;
-      max-width: 80%;
-    }
-    .msg-user {
-      background: #cde9dd;
-      padding: 10px 15px;
-      border-radius: 15px;
-      margin-bottom: 10px;
-      max-width: 80%;
-      align-self: flex-end;
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
     }
     .chat-box {
-      height: 300px;
+      height: 400px;
       overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
       border: 1px solid #ccc;
-      padding: 10px;
+      padding: 1rem;
       border-radius: 10px;
-      margin-bottom: 15px;
-      background: #fdfdfd;
+      background-color: #f1f1f1;
+      margin-bottom: 1rem;
+    }
+    .msg-user {
+      text-align: right;
+      background-color: #d1e7dd;
+      padding: 0.5rem;
+      border-radius: 20px;
+      margin: 0.5rem 0;
+      display: inline-block;
+    }
+    .msg-bot {
+      text-align: left;
+      background-color: #dee2e6;
+      padding: 0.5rem;
+      border-radius: 20px;
+      margin: 0.5rem 0;
+      display: inline-block;
     }
   </style>
 </head>
 <body>
   <div class="chat-container">
-    <h3 class="text-center mb-3">🤖 Chatbot Innovug</h3>
+    <h3 class="text-center mb-4">🤖 Chatbot Innovug</h3>
 
-    <input type="text" id="nombre" class="form-control mb-3" placeholder="Ingresa tu ID o nombre"/>
+    <input type="text" id="user_id" class="form-control mb-3" placeholder="Ingresa tu ID"/>
 
     <div id="chat" class="chat-box"></div>
 
     <div class="input-group mb-2">
-      <input type="text" id="msg" class="form-control" placeholder="Escribe tu mensaje..."/>
-      <button onclick="enviarMensaje()" class="btn btn-primary">Enviar</button>
+      <input type="text" id="msg" class="form-control" placeholder="Escribe tu mensaje..." />
+      <button class="btn btn-primary" onclick="enviarMensaje()">Enviar</button>
     </div>
 
     <div class="input-group">
-      <input type="file" id="fileInput" class="form-control"/>
-      <button onclick="enviarArchivo()" class="btn btn-secondary">Enviar archivo</button>
+      <input type="file" id="fileInput" class="form-control" />
+      <button class="btn btn-dark" onclick="enviarArchivo()">Enviar archivo</button>
     </div>
   </div>
 
   <script>
-    const BACKEND_URL = "https://chatbot-backend-nqls.onrender.com/api"; // cambia según tu URL
-
     const chat = document.getElementById("chat");
 
-    function agregarMensaje(texto, clase = "msg-bot") {
-      const div = document.createElement("div");
-      div.className = clase;
-      div.textContent = texto;
-      chat.appendChild(div);
-      chat.scrollTop = chat.scrollHeight;
-    }
-
     async function enviarMensaje() {
-      const nombre = document.getElementById("nombre").value.trim();
       const texto = document.getElementById("msg").value.trim();
-      if (!nombre || !texto) return;
+      const user_id = document.getElementById("user_id").value.trim();
+      if (!texto || !user_id) return;
 
-      agregarMensaje(`${nombre}: ${texto}`, "msg-user");
+      const divUser = document.createElement("div");
+      divUser.className = "msg-user align-self-end";
+      divUser.innerText = `${user_id}: ${texto}`;
+      chat.appendChild(divUser);
 
       try {
-        const res = await fetch(`${BACKEND_URL}/chat`, {
+        const res = await fetch("https://chatbot-backend-nqls.onrender.com/api/chat", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_id: nombre, message: texto })
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ message: texto, user_id }),
         });
-
         const data = await res.json();
-        agregarMensaje(`Bot: ${data.response}`);
-      } catch (error) {
-        agregarMensaje("Error: No se pudo conectar al backend.");
-        console.error(error);
+
+        const divBot = document.createElement("div");
+        divBot.className = "msg-bot";
+        divBot.innerText = `Bot: ${data.response || "Error"}`;
+        chat.appendChild(divBot);
+      } catch (err) {
+        const errorBot = document.createElement("div");
+        errorBot.className = "msg-bot";
+        errorBot.innerText = "Bot: Error al conectar con el servidor.";
+        chat.appendChild(errorBot);
       }
 
       document.getElementById("msg").value = "";
+      chat.scrollTop = chat.scrollHeight;
     }
 
     async function enviarArchivo() {
       const fileInput = document.getElementById("fileInput");
-      const archivo = fileInput.files[0];
-      const nombre = document.getElementById("nombre").value.trim();
-
-      if (!archivo || !nombre) return alert("Falta nombre o archivo");
+      const file = fileInput.files[0];
+      const user_id = document.getElementById("user_id").value.trim();
+      if (!file || !user_id) return;
 
       const formData = new FormData();
-      formData.append("user_id", nombre);
-      formData.append("message", `¿recibiste mi propuesta?`);
-
-      const ext = archivo.name.split(".").pop().toLowerCase();
-      if (ext === "pdf") formData.append("pdf", archivo);
-      else if (ext === "xlsx") formData.append("xlsx", archivo);
-      else if (ext === "csv") formData.append("csv", archivo);
-      else return alert("Formato no válido. Solo PDF, XLSX, CSV.");
-
-      agregarMensaje(`📄 Archivo ${archivo.name} recibido correctamente`);
+      formData.append("file", file);
 
       try {
-        const res = await fetch(`${BACKEND_URL}/chat`, {
+        const res = await fetch("https://chatbot-backend-nqls.onrender.com/api/upload", {
           method: "POST",
-          body: formData
+          body: formData,
         });
-
         const data = await res.json();
-        if (data.error) agregarMensaje(`Bot: ${data.error}`);
-        else agregarMensaje(`Bot: ${data.response}`);
-      } catch (error) {
-        agregarMensaje("Error al enviar archivo.");
-        console.error(error);
+
+        const divArchivo = document.createElement("div");
+        divArchivo.className = "msg-bot";
+        divArchivo.innerText = `📄 Archivo ${file.name} recibido correctamente`;
+        chat.appendChild(divArchivo);
+      } catch (err) {
+        const errorDiv = document.createElement("div");
+        errorDiv.className = "msg-bot";
+        errorDiv.innerText = "Bot: Error al subir el archivo.";
+        chat.appendChild(errorDiv);
       }
 
+      chat.scrollTop = chat.scrollHeight;
       fileInput.value = "";
     }
   </script>
 </body>
 </html>
+
