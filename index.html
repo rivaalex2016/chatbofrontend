@@ -17,12 +17,24 @@
           <input type="file" id="file" name="file" class="form-control mb-2" />
           <button type="submit" class="btn btn-primary w-100">Enviar</button>
         </form>
-        <div id="chat-output" class="mt-4"></div>
+
+        <div id="chat-output" class="mt-4 border rounded p-3 bg-white" style="max-height: 300px; overflow-y: auto;">
+          <!-- Mensajes aparecerán aquí -->
+        </div>
       </div>
     </div>
   </div>
 
   <script>
+    function agregarMensaje(alguien, mensaje) {
+      const contenedor = document.getElementById("chat-output");
+      const nuevoMensaje = document.createElement("div");
+      nuevoMensaje.classList.add("mb-2");
+      nuevoMensaje.innerHTML = `<strong>${alguien}:</strong> ${mensaje}`;
+      contenedor.appendChild(nuevoMensaje);
+      contenedor.scrollTop = contenedor.scrollHeight;
+    }
+
     document.getElementById('chat-form').addEventListener('submit', async function (e) {
       e.preventDefault();
 
@@ -43,6 +55,9 @@
           formData.append("xlsx", file);
         } else if (ext === "csv") {
           formData.append("csv", file);
+        } else {
+          alert("Solo se permiten archivos PDF, XLSX o CSV.");
+          return;
         }
       }
 
@@ -52,11 +67,20 @@
           body: formData
         });
 
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Error: ${response.status} - ${errorText}`);
+        }
+
         const data = await response.json();
-        document.getElementById('chat-output').innerText = "Bot: " + (data.response || data.error);
+
+        agregarMensaje("Tú", message);
+        agregarMensaje("Chatbot", data.response || "Sin respuesta del servidor");
+
+        document.getElementById("message").value = "";
+        document.getElementById("file").value = "";
       } catch (error) {
-        console.error("Error enviando mensaje:", error);
-        document.getElementById('chat-output').innerText = "Error del servidor.";
+        agregarMensaje("Error", error.message);
       }
     });
   </script>
